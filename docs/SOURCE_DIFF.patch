@@ -1,0 +1,522 @@
+--- v0.8/app/build.gradle.kts
++++ v0.9/app/build.gradle.kts
+@@ -4,15 +4,15 @@
+ }
+ 
+ android {
+-    namespace = "com.alexcantini.tetristv"
++    namespace = "com.alexcantini.blockstv"
+     compileSdk = 35
+ 
+     defaultConfig {
+-        applicationId = "com.alexcantini.tetristv"
++        applicationId = "com.alexcantini.blockstv"
+         minSdk = 23
+         targetSdk = 35
+-        versionCode = 8
+-        versionName = "0.8"
++        versionCode = 9
++        versionName = "0.9"
+     }
+ 
+     buildTypes {
+--- v0.8/app/src/main/AndroidManifest.xml
++++ v0.9/app/src/main/AndroidManifest.xml
+@@ -4,8 +4,9 @@
+ 
+     <application
+         android:allowBackup="true"
++        android:enableOnBackInvokedCallback="false"
+         android:icon="@drawable/ic_launcher"
+-        android:label="TETRIS TV"
++        android:label="BlocksTV"
+         android:theme="@style/AppTheme">
+ 
+         <activity
+--- v0.8/app/src/main/java/com/alexcantini/tetristv/TetrisView.kt
++++ v0.9/app/src/main/java/com/alexcantini/blockstv/BlocksView.kt
+@@ -1,4 +1,4 @@
+-package com.alexcantini.tetristv
++package com.alexcantini.blockstv
+ 
+ import android.content.Context
+ import android.graphics.*
+@@ -8,7 +8,7 @@
+ import android.view.View
+ import kotlin.math.min
+ 
+-class TetrisView(
++class BlocksView(
+     context: Context,
+     private val exitApp: () -> Unit
+ ) : View(context) {
+@@ -60,7 +60,9 @@
+     // evitano ripetizioni: L2 = pausa/riprendi, R2 = funzione EXIT del telecomando.
+     private var gamepadL2TriggerHeld = false
+     private var gamepadR2TriggerHeld = false
+-    private var exitDialogHatHeld = false
++    private var gamepadL2KeyHeld = false
++    private var gamepadR2KeyHeld = false
++    private var lastTclExitTime = -1000L
+ 
+     private val bg = Color.rgb(5, 9, 16)
+     private val panel = Color.rgb(12, 22, 36)
+@@ -167,7 +169,7 @@
+     }
+ 
+     private fun drawLogo(c: Canvas, cx: Float, baselineTop: Float, size: Float) {
+-        val letters = "TETRIS"
++        val letters = "BLOCKSTV"
+         val colors = intArrayOf(
+             Color.rgb(34, 116, 255), Color.rgb(255, 161, 28), Color.rgb(255, 62, 55),
+             Color.rgb(41, 213, 94), Color.rgb(34, 198, 245), Color.rgb(194, 62, 255)
+@@ -182,7 +184,7 @@
+         for (i in letters.indices) {
+             textPaint.color = Color.BLACK
+             c.drawText(letters[i].toString(), x + 4f, y + 6f, textPaint)
+-            textPaint.color = colors[i]
++            textPaint.color = colors[i % colors.size]
+             c.drawText(letters[i].toString(), x, y, textPaint)
+             x += widths[i] + size * 0.06f
+         }
+@@ -319,7 +321,7 @@
+         val logoH = area.height() * 0.20f
+         val logoR = RectF(area.left, area.top, area.right, area.top + logoH)
+         drawPanel(c, logoR, 16f)
+-        drawLogo(c, logoR.centerX(), logoR.top + logoH * 0.18f, logoH * 0.45f)
++        drawLogo(c, logoR.centerX(), logoR.top + logoH * 0.18f, logoH * 0.34f)
+ 
+         val levelR = RectF(area.left, logoR.bottom + area.height() * 0.02f, area.right, logoR.bottom + area.height() * 0.15f)
+         drawPanel(c, levelR, 14f)
+@@ -468,15 +470,19 @@
+         c.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
+     }
+ 
+-    fun handleKeyDown(keyCode: Int, event: KeyEvent): Boolean {
++    fun handleKeyDown(inputCode: Int, event: KeyEvent): Boolean {
++        val keyCode = if (screen != Screen.GAME && inputCode in listOf(
++                KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_BUTTON_B,
++                KeyEvent.KEYCODE_BUTTON_X, KeyEvent.KEYCODE_BUTTON_Y))
++            KeyEvent.KEYCODE_DPAD_CENTER else inputCode
+         val firstPress = event.repeatCount == 0
+-        val isGamepad = (event.source and android.view.InputDevice.SOURCE_GAMEPAD) == android.view.InputDevice.SOURCE_GAMEPAD ||
+-            (event.source and android.view.InputDevice.SOURCE_JOYSTICK) == android.view.InputDevice.SOURCE_JOYSTICK
++        val isGamepad = ControllerInput.isController(event)
+ 
+         // Sul TCL il tasto EXIT reale è il keyCode proprietario 4095.
+         // Durante una partita il firmware può inviare subito dopo anche KEYCODE_BACK (4):
+-        // lo consumiamo sempre senza azione per evitare una seconda operazione involontaria.
+-        if (keyCode == KeyEvent.KEYCODE_BACK) return true
++        // lo filtriamo per 500 ms; BACK standard usa poi lo stesso flusso di EXIT.
++        if (keyCode == KeyEvent.KEYCODE_BACK && SystemClock.uptimeMillis() - lastTclExitTime < 500L) return true
++        if (keyCode == TCL_EXIT_KEYCODE && firstPress) lastTclExitTime = SystemClock.uptimeMillis()
+ 
+         if (isExitKey(keyCode)) {
+             if (!firstPress) return true
+@@ -557,17 +563,17 @@
+                 // Grilletti gamepad: L2 = pausa/riprendi, R2 = EXIT.
+                 // Li gestiamo prima degli stati GAME OVER/PAUSA per mantenerli sempre disponibili.
+                 if (isGamepad && keyCode == KeyEvent.KEYCODE_BUTTON_L2) {
+-                    if (firstPress && !exitDialog && engine?.gameOver != true) {
+-                        gamepadL2TriggerHeld = true
+-                        togglePause()
++                    if (firstPress && !gamepadL2KeyHeld) {
++                        gamepadL2KeyHeld = true
++                        if (!gamepadL2TriggerHeld && !exitDialog && engine?.gameOver != true) togglePause()
+                     }
+                     return true
+                 }
+ 
+                 if (isGamepad && keyCode == KeyEvent.KEYCODE_BUTTON_R2) {
+-                    if (firstPress && !exitDialog) {
+-                        gamepadR2TriggerHeld = true
+-                        handleGamepadExit()
++                    if (firstPress && !gamepadR2KeyHeld) {
++                        gamepadR2KeyHeld = true
++                        if (!gamepadR2TriggerHeld) handleGamepadExit()
+                     }
+                     return true
+                 }
+@@ -661,8 +667,8 @@
+                         return true
+                     }
+                     KeyEvent.KEYCODE_DPAD_UP -> {
+-                        // Telecomando invariato: SU ruota. Sul gamepad SU non fa nulla.
+-                        if (!isGamepad && firstPress) {
++                        // SU ruota su telecomando, D-pad e stick sinistro.
++                        if (firstPress) {
+                             e.rotate()
+                             invalidate()
+                         }
+@@ -686,8 +692,7 @@
+     }
+ 
+     fun handleKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+-        val isGamepad = (event.source and android.view.InputDevice.SOURCE_GAMEPAD) == android.view.InputDevice.SOURCE_GAMEPAD ||
+-            (event.source and android.view.InputDevice.SOURCE_JOYSTICK) == android.view.InputDevice.SOURCE_JOYSTICK
++        val isGamepad = ControllerInput.isController(event)
+ 
+         when (keyCode) {
+             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> return true
+@@ -697,11 +702,11 @@
+                 return true
+             }
+             KeyEvent.KEYCODE_BUTTON_L2 -> if (isGamepad) {
+-                gamepadL2TriggerHeld = false
++                gamepadL2KeyHeld = false
+                 return true
+             }
+             KeyEvent.KEYCODE_BUTTON_R2 -> if (isGamepad) {
+-                gamepadR2TriggerHeld = false
++                gamepadR2KeyHeld = false
+                 return true
+             }
+             KeyEvent.KEYCODE_BACK -> return true
+@@ -721,26 +726,9 @@
+         val r2 = maxOf(event.getAxisValue(MotionEvent.AXIS_GAS), event.getAxisValue(MotionEvent.AXIS_RTRIGGER))
+         var handled = false
+ 
+-        // Il popup EXIT è disegnato nella stessa View: il D-pad del gamepad arriva
+-        // spesso come HAT_X, non come KeyEvent. Lo gestiamo qui senza toccare il telecomando.
+-        if (exitDialog) {
+-            val hatX = event.getAxisValue(MotionEvent.AXIS_HAT_X)
+-            if (kotlin.math.abs(hatX) > 0.50f && !exitDialogHatHeld) {
+-                exitDialogHatHeld = true
+-                exitDialogSelection = 1 - exitDialogSelection
+-                invalidate()
+-                handled = true
+-            } else if (kotlin.math.abs(hatX) < 0.25f && exitDialogHatHeld) {
+-                exitDialogHatHeld = false
+-                handled = true
+-            }
+-        } else {
+-            exitDialogHatHeld = false
+-        }
+-
+         if (l2 > 0.50f && !gamepadL2TriggerHeld) {
+             gamepadL2TriggerHeld = true
+-            if (!exitDialog && engine?.gameOver != true) togglePause()
++            if (!gamepadL2KeyHeld && !exitDialog && engine?.gameOver != true) togglePause()
+             handled = true
+         } else if (l2 < 0.25f && gamepadL2TriggerHeld) {
+             gamepadL2TriggerHeld = false
+@@ -749,7 +737,7 @@
+ 
+         if (r2 > 0.50f && !gamepadR2TriggerHeld) {
+             gamepadR2TriggerHeld = true
+-            if (!exitDialog) handleGamepadExit()
++            if (!gamepadR2KeyHeld) handleGamepadExit()
+             handled = true
+         } else if (r2 < 0.25f && gamepadR2TriggerHeld) {
+             gamepadR2TriggerHeld = false
+@@ -787,10 +775,17 @@
+     }
+ 
+     fun handleBackFallback(): Boolean {
+-        // Il normale BACK non ha alcun ruolo nell'app: il telecomando TCL dispone
+-        // di un tasto EXIT dedicato (keyCode 4095), che gestiamo separatamente.
+-        // Questo evita anche il doppio evento 4095 + BACK osservato durante il gioco.
+-        return true
++        val now = SystemClock.uptimeMillis()
++        val event = KeyEvent(now, now, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, 0)
++        return handleKeyDown(KeyEvent.KEYCODE_BACK, event)
++    }
++
++    fun suspendInput() {
++        if (isGameActive()) togglePause() else stopAllScheduledInput()
++        gamepadL2TriggerHeld = false
++        gamepadR2TriggerHeld = false
++        gamepadL2KeyHeld = false
++        gamepadR2KeyHeld = false
+     }
+ 
+     private fun startGame(level: Int) {
+@@ -829,13 +824,11 @@
+         removeCallbacks(gravityRunnable)
+         exitDialog = true
+         exitDialogSelection = 0
+-        exitDialogHatHeld = false
+         invalidate()
+     }
+ 
+     private fun closeExitDialog() {
+         exitDialog = false
+-        exitDialogHatHeld = false
+         // ANNULLA deve tornare direttamente alla partita, anche se l'EXIT è stato
+         // aperto mentre il gioco era in pausa.
+         paused = false
+@@ -881,9 +874,11 @@
+     private fun isPauseKey(code: Int): Boolean =
+         code == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE ||
+             code == KeyEvent.KEYCODE_MEDIA_PAUSE ||
+-            code == KeyEvent.KEYCODE_MEDIA_PLAY
+-
+-    private fun isExitKey(code: Int): Boolean = code == TCL_EXIT_KEYCODE
++            code == KeyEvent.KEYCODE_MEDIA_PLAY ||
++            code == KeyEvent.KEYCODE_BUTTON_START
++
++    private fun isExitKey(code: Int): Boolean =
++        code == TCL_EXIT_KEYCODE || code == KeyEvent.KEYCODE_BACK || code == KeyEvent.KEYCODE_BUTTON_SELECT
+ 
+     private fun lighten(color: Int, f: Float): Int = Color.rgb(
+         (Color.red(color) * f).toInt().coerceAtMost(255),
+--- /dev/null
++++ v0.9/app/src/main/java/com/alexcantini/blockstv/ControllerInput.kt
+@@ -0,0 +1,128 @@
++package com.alexcantini.blockstv
++
++import android.os.Handler
++import android.os.Looper
++import android.os.SystemClock
++import android.view.InputDevice
++import android.view.KeyEvent
++import android.view.MotionEvent
++import kotlin.math.abs
++
++/** Normalizes controller directions; remote D-pad events keep their native repeat. */
++internal class ControllerInput(private val down: (Int, KeyEvent) -> Boolean,
++                               private val up: (Int, KeyEvent) -> Boolean) {
++    private val handler = Handler(Looper.getMainLooper())
++    private val keys = mutableSetOf<Int>()
++    private var axisDirection: Int? = null
++    private var activeDirection: Int? = null
++    private var deviceId = -1
++    private var repeatCount = 0
++    private val repeat = object : Runnable {
++        override fun run() {
++            val direction = activeDirection ?: return
++            if (direction != KeyEvent.KEYCODE_DPAD_LEFT && direction != KeyEvent.KEYCODE_DPAD_RIGHT) return
++            emit(direction, true, ++repeatCount)
++            handler.postDelayed(this, 100L)
++        }
++    }
++
++    fun key(event: KeyEvent): Boolean {
++        val code = normalize(event.keyCode)
++        if (code !in DIRECTIONS || (!isController(event) && code == event.keyCode)) return false
++        selectDevice(event.deviceId)
++        if (event.action == KeyEvent.ACTION_DOWN) keys.add(code) else keys.remove(code)
++        updateDirection()
++        return true
++    }
++
++    fun motion(event: MotionEvent): Boolean {
++        if (!event.isFromSource(InputDevice.SOURCE_JOYSTICK) || event.action != MotionEvent.ACTION_MOVE) return false
++        selectDevice(event.deviceId)
++        val hx = event.getAxisValue(MotionEvent.AXIS_HAT_X)
++        val hy = event.getAxisValue(MotionEvent.AXIS_HAT_Y)
++        val usingHat = abs(hx) > 0.5f || abs(hy) > 0.5f
++        val x = if (usingHat) hx else axis(event, MotionEvent.AXIS_X)
++        val y = if (usingHat) hy else axis(event, MotionEvent.AXIS_Y)
++        val threshold = if (usingHat) 0.5f else if (axisDirection != null) 0.35f else 0.55f
++        axisDirection = when {
++            y > threshold -> KeyEvent.KEYCODE_DPAD_DOWN // Keep the downward diagonal filter.
++            y < -threshold && abs(y) >= abs(x) -> KeyEvent.KEYCODE_DPAD_UP
++            x < -threshold -> KeyEvent.KEYCODE_DPAD_LEFT
++            x > threshold -> KeyEvent.KEYCODE_DPAD_RIGHT
++            else -> null
++        }
++        val hadDirection = activeDirection != null
++        updateDirection()
++        return hadDirection || axisDirection != null
++    }
++
++    fun reset() {
++        handler.removeCallbacks(repeat)
++        activeDirection?.let { emit(it, false) }
++        activeDirection = null
++        axisDirection = null
++        keys.clear()
++        repeatCount = 0
++        deviceId = -1
++    }
++
++    private fun selectDevice(id: Int) {
++        if (deviceId != id) { reset(); deviceId = id }
++    }
++
++    private fun updateDirection() {
++        // A controller may report the same D-pad through both keys and HAT axes.
++        val next = when {
++            KeyEvent.KEYCODE_DPAD_DOWN in keys || axisDirection == KeyEvent.KEYCODE_DPAD_DOWN -> KeyEvent.KEYCODE_DPAD_DOWN
++            axisDirection != null -> axisDirection
++            else -> DIRECTIONS.firstOrNull { it in keys }
++        }
++        if (next == activeDirection) return
++        handler.removeCallbacks(repeat)
++        activeDirection?.let { emit(it, false) }
++        activeDirection = next
++        repeatCount = 0
++        next?.let {
++            emit(it, true)
++            if (it == KeyEvent.KEYCODE_DPAD_LEFT || it == KeyEvent.KEYCODE_DPAD_RIGHT) handler.postDelayed(repeat, 250L)
++        }
++    }
++
++    private fun emit(code: Int, pressed: Boolean, repeats: Int = 0) {
++        val now = SystemClock.uptimeMillis()
++        val event = KeyEvent(now, now, if (pressed) KeyEvent.ACTION_DOWN else KeyEvent.ACTION_UP,
++            code, repeats, 0, deviceId, 0, 0, InputDevice.SOURCE_GAMEPAD)
++        if (pressed) down(code, event) else up(code, event)
++    }
++
++    private fun axis(event: MotionEvent, axis: Int): Float {
++        val value = event.getAxisValue(axis)
++        val flat = event.device?.getMotionRange(axis, event.source)?.flat ?: 0f
++        return if (abs(value) <= flat) 0f else value
++    }
++
++    companion object {
++        private val DIRECTIONS = listOf(KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_UP,
++            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT)
++
++        fun isController(event: KeyEvent): Boolean =
++            event.isFromSource(InputDevice.SOURCE_GAMEPAD) || event.isFromSource(InputDevice.SOURCE_JOYSTICK) ||
++            event.device?.supportsSource(InputDevice.SOURCE_GAMEPAD) == true ||
++            event.device?.supportsSource(InputDevice.SOURCE_JOYSTICK) == true ||
++            event.keyCode in KeyEvent.KEYCODE_BUTTON_A..KeyEvent.KEYCODE_BUTTON_MODE ||
++            event.keyCode in KeyEvent.KEYCODE_BUTTON_1..KeyEvent.KEYCODE_BUTTON_16
++
++        fun normalize(code: Int): Int = when (code) {
++            KeyEvent.KEYCODE_A -> KeyEvent.KEYCODE_DPAD_LEFT
++            KeyEvent.KEYCODE_D -> KeyEvent.KEYCODE_DPAD_RIGHT
++            KeyEvent.KEYCODE_W -> KeyEvent.KEYCODE_DPAD_UP
++            KeyEvent.KEYCODE_S -> KeyEvent.KEYCODE_DPAD_DOWN
++            KeyEvent.KEYCODE_ESCAPE -> KeyEvent.KEYCODE_BACK
++            KeyEvent.KEYCODE_BUTTON_1 -> KeyEvent.KEYCODE_BUTTON_A
++            KeyEvent.KEYCODE_BUTTON_2 -> KeyEvent.KEYCODE_BUTTON_B
++            KeyEvent.KEYCODE_BUTTON_3 -> KeyEvent.KEYCODE_BUTTON_X
++            KeyEvent.KEYCODE_BUTTON_4 -> KeyEvent.KEYCODE_BUTTON_Y
++            else -> code
++        }
++    }
++}
+--- v0.8/app/src/main/java/com/alexcantini/tetristv/GameEngine.kt
++++ v0.9/app/src/main/java/com/alexcantini/blockstv/GameEngine.kt
+@@ -1,4 +1,4 @@
+-package com.alexcantini.tetristv
++package com.alexcantini.blockstv
+ 
+ import kotlin.math.max
+ import kotlin.random.Random
+--- v0.8/app/src/main/java/com/alexcantini/tetristv/MainActivity.kt
++++ v0.9/app/src/main/java/com/alexcantini/blockstv/MainActivity.kt
+@@ -1,6 +1,7 @@
+-package com.alexcantini.tetristv
++package com.alexcantini.blockstv
+ 
+ import android.app.Activity
++import android.hardware.input.InputManager
+ import android.os.Bundle
+ import android.util.Log
+ import android.view.KeyEvent
+@@ -9,7 +10,19 @@
+ import android.view.WindowManager
+ 
+ class MainActivity : Activity() {
+-    private lateinit var gameView: TetrisView
++    private lateinit var gameView: BlocksView
++    private lateinit var controllerInput: ControllerInput
++    private lateinit var inputManager: InputManager
++    private val deviceListener = object : InputManager.InputDeviceListener {
++        override fun onInputDeviceAdded(deviceId: Int) = Unit
++        override fun onInputDeviceChanged(deviceId: Int) = releaseController()
++        override fun onInputDeviceRemoved(deviceId: Int) = releaseController()
++    }
++
++    private fun releaseController() {
++        controllerInput.reset()
++        gameView.suspendInput()
++    }
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+@@ -23,24 +36,51 @@
+             View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+         )
+ 
+-        gameView = TetrisView(this) { finish() }
++        gameView = BlocksView(this) { finish() }
++        controllerInput = ControllerInput(gameView::handleKeyDown, gameView::handleKeyUp)
++        inputManager = getSystemService(INPUT_SERVICE) as InputManager
++        inputManager.registerInputDeviceListener(deviceListener, null)
+         setContentView(gameView)
+         gameView.requestFocus()
+     }
+ 
+     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+-        Log.d("TetrisTVKey", "DOWN keyCode=$keyCode name=${KeyEvent.keyCodeToString(keyCode)} repeat=${event.repeatCount}")
+-        return if (gameView.handleKeyDown(keyCode, event)) true else super.onKeyDown(keyCode, event)
++        Log.d("BlocksTVKey", "DOWN keyCode=$keyCode name=${KeyEvent.keyCodeToString(keyCode)} repeat=${event.repeatCount}")
++        if (controllerInput.key(event)) return true
++        return if (gameView.handleKeyDown(ControllerInput.normalize(keyCode), event)) true else super.onKeyDown(keyCode, event)
+     }
+ 
+     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+-        Log.d("TetrisTVKey", "UP keyCode=$keyCode name=${KeyEvent.keyCodeToString(keyCode)}")
+-        return if (gameView.handleKeyUp(keyCode, event)) true else super.onKeyUp(keyCode, event)
++        Log.d("BlocksTVKey", "UP keyCode=$keyCode name=${KeyEvent.keyCodeToString(keyCode)}")
++        if (controllerInput.key(event)) return true
++        return if (gameView.handleKeyUp(ControllerInput.normalize(keyCode), event)) true else super.onKeyUp(keyCode, event)
+     }
+ 
+ 
+     override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+-        return if (gameView.handleGenericMotionEvent(event)) true else super.onGenericMotionEvent(event)
++        val directionHandled = controllerInput.motion(event)
++        val triggerHandled = gameView.handleGenericMotionEvent(event)
++        return if (directionHandled || triggerHandled) true else super.onGenericMotionEvent(event)
++    }
++
++    override fun onWindowFocusChanged(hasFocus: Boolean) {
++        super.onWindowFocusChanged(hasFocus)
++        if (!hasFocus && ::controllerInput.isInitialized) {
++            controllerInput.reset()
++            gameView.suspendInput()
++        }
++    }
++
++    override fun onPause() {
++        controllerInput.reset()
++        gameView.suspendInput()
++        super.onPause()
++    }
++
++    override fun onDestroy() {
++        inputManager.unregisterInputDeviceListener(deviceListener)
++        controllerInput.reset()
++        super.onDestroy()
+     }
+ 
+     @Deprecated("Deprecated in Android")
+--- v0.8/app/src/main/res/values/styles.xml
++++ v0.9/app/src/main/res/values/styles.xml
+@@ -5,6 +5,5 @@
+         <item name="android:windowActionModeOverlay">true</item>
+         <item name="android:colorAccent">#42B8FF</item>
+         <item name="android:navigationBarColor">#05080E</item>
+-        <item name="android:windowLightNavigationBar">false</item>
+     </style>
+ </resources>
+--- /dev/null
++++ v0.9/app/src/main/res/values-v27/styles.xml
+@@ -0,0 +1,10 @@
++<resources>
++    <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
++        <item name="android:fontFamily">sans</item>
++        <item name="android:windowFullscreen">true</item>
++        <item name="android:windowActionModeOverlay">true</item>
++        <item name="android:colorAccent">#42B8FF</item>
++        <item name="android:navigationBarColor">#05080E</item>
++        <item name="android:windowLightNavigationBar">false</item>
++    </style>
++</resources>
+--- v0.8/settings.gradle.kts
++++ v0.9/settings.gradle.kts
+@@ -14,5 +14,5 @@
+     }
+ }
+ 
+-rootProject.name = "TetrisTV"
++rootProject.name = "BlocksTV"
+ include(":app")

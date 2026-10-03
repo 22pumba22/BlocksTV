@@ -4,9 +4,16 @@ Puzzle a blocchi per **Android TV**, derivato dalla base stabile v0.8.
 La v0.9 cambia solo branding e compatibilità dei controlli: il motore, i punteggi,
 le rotazioni, le collisioni, i livelli e la curva di gravità restano identici.
 
+## Download
+
+[Scarica BlocksTV v0.9 per Android TV (APK)](https://github.com/22pumba22/BlocksTV/releases/download/v0.9/BlocksTV_v0.9_debug.apk)
+
+Versione preliminare per il collaudo.
+
 ![Home di BlocksTV](docs/screenshots/home_screen.png)
 
 ![BlocksTV gameplay](docs/screenshots/blockstv_gameplay.png)
+
 ## Novità della v0.9
 
 - Nome app e progetto: **BlocksTV**; nome consigliato del repository: `BlocksTV`.

@@ -8,7 +8,7 @@ le rotazioni, le collisioni, i livelli e la curva di gravità restano identici.
 
 [Scarica BlocksTV v0.9 per Android TV (APK)](https://github.com/22pumba22/BlocksTV/releases/download/v0.9/BlocksTV_v0.9_debug.apk)
 
-Versione preliminare per il collaudo.
+Versione preliminare.
 
 ![Home di BlocksTV](docs/screenshots/home_screen.png)
 

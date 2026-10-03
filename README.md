@@ -6,6 +6,7 @@ le rotazioni, le collisioni, i livelli e la curva di gravità restano identici.
 
 ![Home di BlocksTV](docs/screenshots/home_screen.png)
 
+![BlocksTV gameplay](docs/screenshots/gameplay.png)
 ## Novità della v0.9
 
 - Nome app e progetto: **BlocksTV**; nome consigliato del repository: `BlocksTV`.

@@ -1,0 +1,25 @@
+BlocksTV è un puzzle a blocchi progettato per Android TV.
+
+Funzioni:
+- Interfaccia neon pensata per lo schermo della TV
+- Dieci livelli di partenza
+- Punteggio, righe, livello e anteprima del prossimo pezzo
+- Controlli tramite telecomando, D-pad e stick analogico sinistro
+- Pausa, riavvio e conferma di uscita
+- Nessuna pubblicità, analisi, account o permesso di rete
+
+Controlli:
+Sinistra / Destra: movimento
+Giù: caduta veloce finché premuto
+Su: rotazione
+OK / Invio: nessuna azione durante la partita attiva
+Play/Pause, Start o L2: pausa / riprendi
+Back, Select o R2: conferma di uscita
+A / B / X / Y del gamepad: rotazione; conferma nei menu
+
+I controller in modalità tastiera possono usare W / A / S / D, Invio ed Escape.
+La compatibilità dipende dalla modalità del controller e dal firmware Android.
+L'app richiede un telecomando o un gamepad; non offre controlli touch.
+
+La versione 0.9 aggiorna branding e compatibilità degli input, mantenendo
+il motore della base 0.8 conservata localmente.

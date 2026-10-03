@@ -1,0 +1,1 @@
+Renamed the app to BlocksTV and updated its package, home artwork and TV banner. Added left-stick controls, D-pad key/axis deduplication, keyboard-mode fallbacks and standard Back support. The game engine is unchanged. Controller compatibility testing is ongoing.

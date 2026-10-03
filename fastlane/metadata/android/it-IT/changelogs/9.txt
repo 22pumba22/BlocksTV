@@ -1,0 +1,1 @@
+App rinominata BlocksTV, con nuovo package, Home e banner TV. Aggiunti stick sinistro, gestione dei duplicati D-pad tasti/assi, fallback tastiera e Back standard. Motore di gioco invariato. Collaudo dei controller ancora in corso.

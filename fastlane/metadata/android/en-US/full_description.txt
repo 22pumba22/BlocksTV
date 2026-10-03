@@ -1,0 +1,25 @@
+BlocksTV is a falling-block puzzle game designed for Android TV.
+
+Features:
+- A neon interface designed for a television screen
+- Ten starting levels
+- Score, cleared lines, level and next-piece preview
+- TV remote, D-pad and left analog stick controls
+- Pause, restart and an exit confirmation dialog
+- No ads, analytics, accounts or network permissions
+
+Controls:
+Left / Right: move
+Down: fast drop while held
+Up: rotate
+OK / Enter: no action during active gameplay
+Play/Pause, Start or L2: pause / resume
+Back, Select or R2: exit confirmation
+Gamepad A / B / X / Y: rotate; confirm in menus
+
+Keyboard-mode controllers can use W / A / S / D, Enter and Escape.
+Controller compatibility depends on the input mode and Android firmware.
+The app is designed for a remote or gamepad; touch controls are not provided.
+
+Version 0.9 changes branding and input compatibility while keeping the game
+engine from the locally maintained 0.8 base unchanged.

@@ -14,7 +14,10 @@ android {
         versionCode = 9
         versionName = "0.9"
     }
-
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
     buildTypes {
         release {
             isMinifyEnabled = true

@@ -1,0 +1,1 @@
+Interfaccia in inglese e italiano secondo la lingua del sistema. Pulsanti Home localizzati. Rimossi i log dei singoli tasti. Gameplay e controlli invariati.

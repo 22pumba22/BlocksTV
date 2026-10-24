@@ -155,6 +155,11 @@ class BlocksView(
         // Render diretto dell'immagine, senza usare il Paint condiviso dal gameplay.
         c.drawBitmap(homeBitmap, src, dst, homePaint)
 
+        if (resources.getString(R.string.ui_language) != "it") {
+            drawHomeLabel(c, resources.getString(R.string.play), 0.533f)
+            drawHomeLabel(c, resources.getString(R.string.exit), 0.703f)
+        }
+
         // Evidenziamo solo il pulsante selezionato senza ridisegnare la grafica.
         // Coordinate normalizzate sulla composizione 16:9 dell'immagine approvata.
         val playRect = RectF(width * 0.325f, height * 0.453f, width * 0.662f, height * 0.600f)
@@ -166,6 +171,20 @@ class BlocksView(
         paint.color = Color.WHITE
         c.drawRoundRect(selected, height * 0.025f, height * 0.025f, paint)
         paint.style = Paint.Style.FILL
+    }
+
+    private fun drawHomeLabel(c: Canvas, label: String, centerY: Float) {
+        val r = RectF(width * 0.448f, height * (centerY - 0.046f),
+            width * 0.613f, height * (centerY + 0.046f))
+        paint.style = Paint.Style.FILL
+        paint.color = Color.rgb(2, 5, 17)
+        c.drawRoundRect(r, height * 0.014f, height * 0.014f, paint)
+        textPaint.textAlign = Paint.Align.CENTER
+        textPaint.textSize = height * 0.063f
+        textPaint.color = white
+        textPaint.setShadowLayer(height * 0.009f, 0f, 0f, cyan)
+        c.drawText(label, r.centerX(), centeredBaseline(r.centerY(), textPaint), textPaint)
+        textPaint.clearShadowLayer()
     }
 
     private fun drawLogo(c: Canvas, cx: Float, baselineTop: Float, size: Float) {
@@ -216,10 +235,10 @@ class BlocksView(
         textPaint.textAlign = Paint.Align.CENTER
         textPaint.color = white
         textPaint.textSize = h * 0.09f
-        c.drawText("LIVELLO DI PARTENZA", r.centerX(), r.top + h * 0.16f, textPaint)
+        c.drawText(resources.getString(R.string.starting_level), r.centerX(), r.top + h * 0.16f, textPaint)
         textPaint.color = muted
         textPaint.textSize = h * 0.05f
-        c.drawText("1 lento   •   10 velocissimo   •   predefinito 6", r.centerX(), r.top + h * 0.25f, textPaint)
+        c.drawText(resources.getString(R.string.level_hint), r.centerX(), r.top + h * 0.25f, textPaint)
 
         val cols = 5
         val pad = w * 0.08f
@@ -236,7 +255,7 @@ class BlocksView(
         }
         textPaint.color = muted
         textPaint.textSize = h * 0.045f
-        c.drawText("D-PAD seleziona   •   OK avvia   •   EXIT annulla", r.centerX(), r.bottom - h * 0.08f, textPaint)
+        c.drawText(resources.getString(R.string.level_controls), r.centerX(), r.bottom - h * 0.08f, textPaint)
     }
 
     private fun drawGame(c: Canvas) {
@@ -290,7 +309,7 @@ class BlocksView(
     private fun drawStatPanels(c: Canvas, area: RectF, e: GameEngine) {
         val gap = area.height() * 0.018f
         val h = (area.height() - gap * 3) / 4f
-        val labels = arrayOf("SCORE", "LEVEL", "LINES", "NEXT")
+        val labels = arrayOf(resources.getString(R.string.score), resources.getString(R.string.level), resources.getString(R.string.lines), resources.getString(R.string.next))
         val values = arrayOf(e.score.toString(), e.level.toString().padStart(2, '0'), e.lines.toString().padStart(3, '0'), "")
         for (i in 0..3) {
             val r = RectF(area.left, area.top + i * (h + gap), area.right, area.top + i * (h + gap) + h)
@@ -329,7 +348,7 @@ class BlocksView(
         textPaint.textSize = levelR.height() * 0.36f
         textPaint.color = white
         c.drawText(
-            "LIVELLO  ${e.level.toString().padStart(2, '0')}",
+            resources.getString(R.string.current_level, e.level.toString().padStart(2, '0')),
             levelR.centerX(),
             levelR.centerY() - (textPaint.fontMetrics.ascent + textPaint.fontMetrics.descent) / 2,
             textPaint
@@ -342,7 +361,7 @@ class BlocksView(
         val labelX = ctrl.left + ctrl.width() * 0.42f
         val ys = floatArrayOf(0.16f, 0.34f, 0.52f, 0.70f, 0.87f)
         val icons = arrayOf("↔", "↓", "↑", "▶Ⅱ", "EXIT")
-        val labels = arrayOf("MUOVI", "CADUTA VELOCE", "RUOTA", "PAUSA", "ESCI")
+        val labels = arrayOf(resources.getString(R.string.move), resources.getString(R.string.soft_drop), resources.getString(R.string.rotate), resources.getString(R.string.pause), resources.getString(R.string.exit))
 
         for (i in ys.indices) {
             val yy = ctrl.top + ctrl.height() * ys[i]
@@ -358,7 +377,7 @@ class BlocksView(
 
             textPaint.textAlign = Paint.Align.LEFT
             textPaint.color = white
-            // "CADUTA VELOCE" più piccola per restare interamente dentro il pannello.
+            // Soft-drop label uses smaller text to fit the controls panel.
             textPaint.textSize = ctrl.height() * if (i == 1) 0.046f else 0.055f
             c.drawText(labels[i], labelX, centeredBaseline(yy, textPaint), textPaint)
         }
@@ -415,10 +434,10 @@ class BlocksView(
         textPaint.textAlign = Paint.Align.CENTER
         textPaint.color = white
         textPaint.textSize = height * .075f
-        c.drawText("PAUSA", board.centerX(), board.centerY(), textPaint)
+        c.drawText(resources.getString(R.string.pause), board.centerX(), board.centerY(), textPaint)
         textPaint.color = muted
         textPaint.textSize = height * .028f
-        c.drawText("Premi  ▶Ⅱ  per riprendere", board.centerX(), board.centerY() + height * .07f, textPaint)
+        c.drawText(resources.getString(R.string.resume_hint), board.centerX(), board.centerY() + height * .07f, textPaint)
     }
 
     private fun drawGameOver(c: Canvas, board: RectF) {
@@ -427,10 +446,10 @@ class BlocksView(
         textPaint.textAlign = Paint.Align.CENTER
         textPaint.color = Color.rgb(255, 78, 78)
         textPaint.textSize = height * .065f
-        c.drawText("GAME OVER", board.centerX(), board.centerY() - height * .02f, textPaint)
+        c.drawText(resources.getString(R.string.game_over), board.centerX(), board.centerY() - height * .02f, textPaint)
         textPaint.color = white
         textPaint.textSize = height * .026f
-        c.drawText("OK nuova partita   •   EXIT home", board.centerX(), board.centerY() + height * .06f, textPaint)
+        c.drawText(resources.getString(R.string.new_game_hint), board.centerX(), board.centerY() + height * .06f, textPaint)
     }
 
     private fun drawExitDialog(c: Canvas) {
@@ -442,16 +461,16 @@ class BlocksView(
         textPaint.textAlign = Paint.Align.CENTER
         textPaint.color = white
         textPaint.textSize = h * .16f
-        c.drawText("USCIRE DALLA PARTITA?", r.centerX(), r.top + h * .28f, textPaint)
+        c.drawText(resources.getString(R.string.exit_question), r.centerX(), r.top + h * .28f, textPaint)
         textPaint.color = muted
         textPaint.textSize = h * .075f
-        c.drawText("La partita corrente andrà persa.", r.centerX(), r.top + h * .47f, textPaint)
+        c.drawText(resources.getString(R.string.exit_warning), r.centerX(), r.top + h * .47f, textPaint)
         val gap = w * .05f
         val bw = (w - gap * 3) / 2
         val y = r.top + h * .63f
         val bh = h * .22f
-        drawButton(c, RectF(r.left + gap, y, r.left + gap + bw, y + bh), "ANNULLA", exitDialogSelection == 0)
-        drawButton(c, RectF(r.left + gap * 2 + bw, y, r.left + gap * 2 + bw * 2, y + bh), "ESCI", exitDialogSelection == 1)
+        drawButton(c, RectF(r.left + gap, y, r.left + gap + bw, y + bh), resources.getString(R.string.cancel), exitDialogSelection == 0)
+        drawButton(c, RectF(r.left + gap * 2 + bw, y, r.left + gap * 2 + bw * 2, y + bh), resources.getString(R.string.exit), exitDialogSelection == 1)
     }
 
     private fun drawPanel(c: Canvas, r: RectF, radius: Float) {

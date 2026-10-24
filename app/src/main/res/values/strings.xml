@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="starting_level">STARTING LEVEL</string>
+    <string name="level_hint">1 slow   •   10 fastest   •   default 6</string>
+    <string name="level_controls">D-PAD select   •   OK start   •   EXIT cancel</string>
+    <string name="move">MOVE</string>
+    <string name="soft_drop">SOFT DROP</string>
+    <string name="rotate">ROTATE</string>
+    <string name="pause">PAUSED</string>
+    <string name="exit">EXIT</string>
+    <string name="resume_hint">Press  ▶Ⅱ  to resume</string>
+    <string name="game_over">GAME OVER</string>
+    <string name="new_game_hint">OK new game   •   EXIT home</string>
+    <string name="exit_question">EXIT THE GAME?</string>
+    <string name="exit_warning">The current game will be lost.</string>
+    <string name="cancel">CANCEL</string>
+    <string name="score">SCORE</string>
+    <string name="level">LEVEL</string>
+    <string name="lines">LINES</string>
+    <string name="next">NEXT</string>
+    <string name="current_level">LEVEL  %1$s</string>
+    <string name="play">PLAY</string>
+    <string name="ui_language">en</string>
+</resources>

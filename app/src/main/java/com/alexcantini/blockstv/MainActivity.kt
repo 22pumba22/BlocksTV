@@ -3,7 +3,6 @@ package com.alexcantini.blockstv
 import android.app.Activity
 import android.hardware.input.InputManager
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -45,13 +44,11 @@ class MainActivity : Activity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        Log.d("BlocksTVKey", "DOWN keyCode=$keyCode name=${KeyEvent.keyCodeToString(keyCode)} repeat=${event.repeatCount}")
         if (controllerInput.key(event)) return true
         return if (gameView.handleKeyDown(ControllerInput.normalize(keyCode), event)) true else super.onKeyDown(keyCode, event)
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        Log.d("BlocksTVKey", "UP keyCode=$keyCode name=${KeyEvent.keyCodeToString(keyCode)}")
         if (controllerInput.key(event)) return true
         return if (gameView.handleKeyUp(ControllerInput.normalize(keyCode), event)) true else super.onKeyUp(keyCode, event)
     }

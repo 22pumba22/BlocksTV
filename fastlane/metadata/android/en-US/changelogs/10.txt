@@ -1,0 +1,1 @@
+English and Italian UI selected by system language. Localized home buttons. Removed per-key logging from release and debug builds. Gameplay and controller logic unchanged.

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="starting_level">LIVELLO DI PARTENZA</string>
+    <string name="level_hint">1 lento   •   10 velocissimo   •   predefinito 6</string>
+    <string name="level_controls">D-PAD seleziona   •   OK avvia   •   EXIT annulla</string>
+    <string name="move">MUOVI</string>
+    <string name="soft_drop">CADUTA VELOCE</string>
+    <string name="rotate">RUOTA</string>
+    <string name="pause">PAUSA</string>
+    <string name="exit">ESCI</string>
+    <string name="resume_hint">Premi  ▶Ⅱ  per riprendere</string>
+    <string name="game_over">GAME OVER</string>
+    <string name="new_game_hint">OK nuova partita   •   EXIT home</string>
+    <string name="exit_question">USCIRE DALLA PARTITA?</string>
+    <string name="exit_warning">La partita corrente andrà persa.</string>
+    <string name="cancel">ANNULLA</string>
+    <string name="score">PUNTI</string>
+    <string name="level">LIVELLO</string>
+    <string name="lines">LINEE</string>
+    <string name="next">PROSSIMO</string>
+    <string name="current_level">LIVELLO  %1$s</string>
+    <string name="play">GIOCA</string>
+    <string name="ui_language">it</string>
+</resources>

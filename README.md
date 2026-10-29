@@ -1,8 +1,12 @@
-# BlocksTV v0.9.1
+# BlocksTV v0.9.2
 
 Puzzle a blocchi per **Android TV**, derivato dalla base stabile v0.8.
 La v0.9 cambia solo branding e compatibilità dei controlli: il motore, i punteggi,
 le rotazioni, le collisioni, i livelli e la curva di gravità restano identici.
+
+## Novità v0.9.2
+
+Corretta la legenda inglese: PAUSE indica il comando, PAUSED lo stato di pausa. Italiano, gameplay e controlli invariati. Version code: 11.
 
 ## Novità v0.9.1
 

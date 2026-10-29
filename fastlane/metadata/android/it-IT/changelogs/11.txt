@@ -1,0 +1,1 @@
+Corretta la voce PAUSE nella legenda inglese. In italiano resta PAUSA. Gameplay e controlli invariati.

@@ -21,4 +21,5 @@
     <string name="current_level">LIVELLO  %1$s</string>
     <string name="play">GIOCA</string>
     <string name="ui_language">it</string>
+    <string name="pause_action">PAUSA</string>
 </resources>

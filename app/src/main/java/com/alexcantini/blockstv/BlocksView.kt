@@ -361,7 +361,7 @@ class BlocksView(
         val labelX = ctrl.left + ctrl.width() * 0.42f
         val ys = floatArrayOf(0.16f, 0.34f, 0.52f, 0.70f, 0.87f)
         val icons = arrayOf("↔", "↓", "↑", "▶Ⅱ", "EXIT")
-        val labels = arrayOf(resources.getString(R.string.move), resources.getString(R.string.soft_drop), resources.getString(R.string.rotate), resources.getString(R.string.pause), resources.getString(R.string.exit))
+        val labels = arrayOf(resources.getString(R.string.move), resources.getString(R.string.soft_drop), resources.getString(R.string.rotate), resources.getString(R.string.pause_action), resources.getString(R.string.exit))
 
         for (i in ys.indices) {
             val yy = ctrl.top + ctrl.height() * ys[i]

@@ -1,0 +1,1 @@
+Corrected PAUSE in the English controls legend. The pause overlay still reads PAUSED. Gameplay and controller logic unchanged.

@@ -14,7 +14,7 @@ Interfaccia in inglese e italiano secondo la lingua del sistema, inclusi PLAY/EX
 
 ## Download
 
-[Scarica BlocksTV v0.9 per Android TV (APK)](https://github.com/22pumba22/BlocksTV/releases/download/v0.9/BlocksTV_v0.9_debug.apk)
+[Scarica BlocksTV v0.9.2 per Android TV (APK firmato)](https://github.com/22pumba22/BlocksTV/releases/download/v0.9.2/BlocksTV_v0.9.2_release.apk)
 
 Versione preliminare.
 

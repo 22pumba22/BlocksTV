@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="starting_level">ΕΠΙΠΕΔΟ ΕΚΚΙΝΗΣΗΣ</string>
+    <string name="level_hint">1 Αργό   •   10 Γρήγορο   •   Προεπιλεγμένο 6</string>
+    <string name="level_controls">D-PAD Επιλογή   •   OK Έναρξη   •   EXIT Ακύρωση</string>
+    <string name="move">ΜΕΤΑΚΙΝΗΣΗ</string>
+    <string name="soft_drop">ΠΤΩΣΗ</string>
+    <string name="rotate">ΠΕΡΙΣΤΡΟΦΗ</string>
+    <string name="pause">ΣΕ ΠΑΥΣΗ</string>
+    <string name="exit">ΕΞΟΔΟΣ</string>
+    <string name="resume_hint">Πατήστε  ▶Ⅱ  για επαναφορά</string>
+    <string name="game_over">ΤΕΛΟΣ</string>
+    <string name="new_game_hint">OK Νέο παιχνίδι   •   EXIT Αρχική οθόνη</string>
+    <string name="exit_question">ΕΞΟΔΟΣ;</string>
+    <string name="exit_warning">Το τρέχον παιχνίδι θα χαθεί.</string>
+    <string name="cancel">ΑΚΥΡΟ</string>
+    <string name="score">ΣΚΟΡ</string>
+    <string name="level">ΕΠΙΠΕΔΟ</string>
+    <string name="lines">ΓΡΑΜΜΕΣ</string>
+    <string name="next">ΕΠΟΜΕΝΟ</string>
+    <string name="current_level">ΕΠΙΠΕΔΟ  %1$s</string>
+    <string name="play">ΕΝΑΡΞΗ</string>
+    <string name="ui_language">GR</string>
+    <string name="pause_action">ΠΑΥΣΗ</string>
+</resources>
